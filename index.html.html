@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actividad: Propiedades de las Potencias</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de la fuente Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Aplicamos la fuente Inter como fuente principal */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilos para que los inputs numéricos no muestren flechas */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+        /* Clases de Tailwind para transiciones */
+        .feedback-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .feedback-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms, transform 300ms;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-lg w-full text-center">
+        
+        <h1 class="text-3xl font-bold mb-4 text-indigo-700">Propiedades de las Potencias</h1>
+
+        <!-- Contador de Puntuación -->
+        <div class="mb-4 text-xl flex justify-center space-x-6">
+            <span class="font-semibold">Aciertos: <span id="score-correct" class="text-green-600 font-bold">0</span></span>
+            <span class="font-semibold">Fallos: <span id="score-incorrect" class="text-red-600 font-bold">0</span></span>
+        </div>
+
+        <!-- Contenedor del ejercicio -->
+        <div id="exercise-container" class="bg-gray-50 p-8 rounded-lg text-4xl font-semibold mb-6 text-gray-800 flex items-baseline justify-center min-h-[100px]">
+            <!-- El ejercicio se generará aquí -->
+        </div>
+
+        <!-- Contenedor de la respuesta del usuario -->
+        <div id="input-container" class="mb-6">
+            <label class="block text-xl font-medium text-gray-700 mb-4">Escribe el resultado:</label>
+            <div class="flex items-start justify-center space-x-1">
+                <!-- Input para la Base -->
+                <input type="number" id="base-input" class="w-28 text-center border-2 border-gray-300 rounded-md p-2 text-4xl font-semibold focus:border-indigo-500 focus:ring-indigo-500" placeholder="Base">
+                
+                <!-- Input para el Exponente -->
+                <input type="number" id="exponent-input" class="w-20 text-center border-2 border-gray-300 rounded-md p-1 text-xl font-semibold focus:border-indigo-500 focus:ring-indigo-500" placeholder="Exp.">
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex space-x-4 justify-center">
+            <button id="check-btn" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-indigo-700 transition-colors duration-200">
+                Comprobar
+            </button>
+            <button id="next-btn" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors duration-200 hidden">
+                Siguiente
+            </button>
+        </div>
+
+        <!-- Contenedor de Feedback (Correcto/Incorrecto) -->
+        <div id="feedback-container" class="mt-6 min-h-[120px]">
+            <!-- El mensaje de feedback se insertará aquí -->
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Referencias a los elementos del DOM
+            const exerciseContainer = document.getElementById('exercise-container');
+            const baseInput = document.getElementById('base-input');
+            const exponentInput = document.getElementById('exponent-input');
+            const checkBtn = document.getElementById('check-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const feedbackContainer = document.getElementById('feedback-container');
+            const scoreCorrectEl = document.getElementById('score-correct');
+            const scoreIncorrectEl = document.getElementById('score-incorrect');
+
+            let currentExercise = {};
+            let scoreCorrect = 0;
+            let scoreIncorrect = 0;
+
+            // --- Funciones de Ayuda ---
+
+            /**
+             * Genera un número entero aleatorio entre min y max (ambos incluidos)
+             */
+            function randomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            /**
+             * Genera un entero aleatorio evitando ciertos números (p.ej. 0, 1)
+             */
+            function randomIntAvoid(min, max, avoid = []) {
+                let num;
+                do {
+                    num = randomInt(min, max);
+                } while (avoid.includes(num));
+                return num;
+            }
+
+            /*
+             * (Se elimina la función formatExercise que causaba el error)
+             */
+
+            // --- Lógica Principal ---
+
+            /**
+             * Genera un nuevo ejercicio de potencias
+             */
+            function generateExercise() {
+                const type = randomInt(0, 4); // 5 tipos de ejercicios
+                let base1, base2, exp1, exp2, text, explanation, correctBase, correctExp;
+
+                switch (type) {
+                    // Caso 0: Multiplicación de igual base (a^m * a^n = a^(m+n))
+                    case 0: {
+                        base1 = randomIntAvoid(-10, 10, [0, 1, -1]);
+                        exp1 = randomIntAvoid(-5, 6, [0]);
+                        exp2 = randomIntAvoid(-5, 6, [0]);
+                        text = `(${base1})<sup class="text-2xl -top-4 relative">${exp1}</sup> &middot; (${base1})<sup class="text-2xl -top-4 relative">${exp2}</sup>`;
+                        explanation = `<strong>Multiplicación de potencias de igual base:</strong> Se mantiene la base (<strong>${base1}</strong>) y se suman los exponentes (<strong>${exp1}</strong>) + (<strong>${exp2}</strong>) = <strong>${exp1 + exp2}</strong>.`;
+                        correctBase = base1;
+                        correctExp = exp1 + exp2;
+                        break;
+                    }
+
+                    // Caso 1: División de igual base (a^m / a^n = a^(m-n))
+                    case 1: {
+                        base1 = randomIntAvoid(-10, 10, [0, 1, -1]);
+                        exp1 = randomIntAvoid(-6, 7, [0]);
+                        exp2 = randomIntAvoid(-6, 7, [0, exp1]); // Evita exp1 para que no dé exponente 0
+                        text = `(${base1})<sup class="text-2xl -top-4 relative">${exp1}</sup> &divide; (${base1})<sup class="text-2xl -top-4 relative">${exp2}</sup>`;
+                        explanation = `<strong>División de potencias de igual base:</strong> Se mantiene la base (<strong>${base1}</strong>) y se restan los exponentes (<strong>${exp1}</strong>) - (<strong>${exp2}</strong>) = <strong>${exp1 - exp2}</strong>.`;
+                        correctBase = base1;
+                        correctExp = exp1 - exp2;
+                        break;
+                    }
+
+                    // Caso 2: Multiplicación de igual exponente (a^m * b^m = (a*b)^m)
+                    case 2: {
+                        exp1 = randomIntAvoid(-4, 5, [0, 1, -1]);
+                        base1 = randomIntAvoid(-8, 8, [0, 1, -1]);
+                        base2 = randomIntAvoid(-8, 8, [0, 1, -1, base1]);
+                        text = `(${base1})<sup class="text-2xl -top-4 relative">${exp1}</sup> &middot; (${base2})<sup class="text-2xl -top-4 relative">${exp1}</sup>`;
+                        explanation = `<strong>Multiplicación de potencias de igual exponente:</strong> Se multiplican las bases (<strong>${base1}</strong>) &times; (<strong>${base2}</strong>) = <strong>${base1 * base2}</strong> y se mantiene el exponente (<strong>${exp1}</strong>).`;
+                        correctBase = base1 * base2;
+                        correctExp = exp1;
+                        break;
+                    }
+
+                    // Caso 3: División de igual exponente (a^m / b^m = (a/b)^m)
+                    case 3: {
+                        exp1 = randomIntAvoid(-4, 5, [0, 1, -1]);
+                        base2 = randomIntAvoid(-8, 8, [0, 1, -1]);
+                        base1 = base2 * randomIntAvoid(-5, 5, [0, 1, -1]); // Asegura división exacta
+                        text = `(${base1})<sup class="text-2xl -top-4 relative">${exp1}</sup> &divide; (${base2})<sup class="text-2xl -top-4 relative">${exp1}</sup>`;
+                        explanation = `<strong>División de potencias de igual exponente:</strong> Se dividen las bases (<strong>${base1}</strong>) &divide; (<strong>${base2}</strong>) = <strong>${base1 / base2}</strong> y se mantiene el exponente (<strong>${exp1}</strong>).`;
+                        correctBase = base1 / base2;
+                        correctExp = exp1;
+                        break;
+                    }
+
+                    // Caso 4: Potencia de una potencia ((a^m)^n = a^(m*n))
+                    case 4: {
+                        base1 = randomIntAvoid(-10, 10, [0, 1, -1]);
+                        exp1 = randomIntAvoid(-5, 5, [0, 1, -1]);
+                        exp2 = randomIntAvoid(-5, 5, [0, 1, -1]);
+                        text = `((${base1})<sup class="text-2xl -top-4 relative">${exp1}</sup>)<sup class="text-2xl -top-4 relative">${exp2}</sup>`;
+                        explanation = `<strong>Potencia de una potencia:</strong> Se mantiene la base (<strong>${base1}</strong>) y se multiplican los exponentes (<strong>${exp1}</strong>) &times; (<strong>${exp2}</strong>) = <strong>${exp1 * exp2}</strong>.`;
+                        correctBase = base1;
+                        correctExp = exp1 * exp2;
+                        break;
+                    }
+                }
+
+                currentExercise = { correctBase, correctExp, explanation };
+                exerciseContainer.innerHTML = text; // Se asigna el texto directamente
+
+                // Resetear estado
+                resetInputsAndFeedback();
+            }
+
+            /**
+             * Comprueba la respuesta del usuario
+             */
+            function checkAnswer() {
+                const userBase = parseInt(baseInput.value);
+                const userExp = parseInt(exponentInput.value);
+
+                // Validar que se hayan introducido números
+                if (isNaN(userBase) || isNaN(userExp)) {
+                    feedbackContainer.innerHTML = `
+                        <p class="text-red-600 text-xl font-semibold feedback-enter feedback-enter-active">
+                            Por favor, introduce un valor para la base y el exponente.
+                        </p>`;
+                    // Forzar el repintado para la animación
+                    void feedbackContainer.offsetWidth;
+                    return;
+                }
+
+                const { correctBase, correctExp, explanation } = currentExercise;
+                let feedbackHTML = '';
+
+                if (userBase === correctBase && userExp === correctExp) {
+                    // Respuesta Correcta
+                    scoreCorrect++;
+                    scoreCorrectEl.textContent = scoreCorrect;
+                    feedbackHTML = `
+                        <div class="feedback-enter feedback-enter-active">
+                            <p class="text-green-600 text-2xl font-bold">¡Correcto!</p>
+                            <p class="text-gray-700 text-lg mt-2">La respuesta es <strong>(${correctBase})<sup>${correctExp}</sup></strong>.</p>
+                        </div>
+                    `;
+                } else {
+                    // Respuesta Incorrecta
+                    scoreIncorrect++;
+                    scoreIncorrectEl.textContent = scoreIncorrect;
+                    feedbackHTML = `
+                        <div class="feedback-enter feedback-enter-active">
+                            <p class="text-red-600 text-2xl font-bold">Incorrecto</p>
+                            <p class="text-gray-700 text-lg mt-2">
+                                La respuesta correcta es <strong>(${correctBase})<sup>${correctExp}</sup></strong>.
+                            </p>
+                            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-left text-gray-700">
+                                ${explanation}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                feedbackContainer.innerHTML = feedbackHTML;
+                // Forzar el repintado para la animación
+                void feedbackContainer.firstElementChild.offsetWidth; 
+
+                // Cambiar botones
+                checkBtn.classList.add('hidden');
+                nextBtn.classList.remove('hidden');
+                
+                // Deshabilitar inputs
+                baseInput.disabled = true;
+                exponentInput.disabled = true;
+            }
+
+            /**
+             * Resetea los campos para el siguiente ejercicio
+             */
+            function resetInputsAndFeedback() {
+                baseInput.value = '';
+                exponentInput.value = '';
+                baseInput.disabled = false;
+                exponentInput.disabled = false;
+                feedbackContainer.innerHTML = '';
+                
+                nextBtn.classList.add('hidden');
+                checkBtn.classList.remove('hidden');
+                
+                baseInput.focus();
+            }
+
+            // --- Asignación de Eventos ---
+            checkBtn.addEventListener('click', checkAnswer);
+            nextBtn.addEventListener('click', generateExercise);
+            
+            // Permitir presionar "Enter" para comprobar
+            baseInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') exponentInput.focus();
+            });
+            exponentInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') checkAnswer();
+            });
+
+            // Generar el primer ejercicio al cargar la página
+            generateExercise();
+        });
+    </script>
+</body>
+</html>
